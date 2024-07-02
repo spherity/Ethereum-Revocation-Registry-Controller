@@ -2,9 +2,7 @@
  * A class that can be used to interact with the EIP-5539 contract on behalf of a local controller key-pair
  */
 import {factories, RevocationRegistry} from "@spherity/ethr-revocation-registry/types/ethers-v6";
-import {BlockTag} from "@ethersproject/providers";
-import {Signer, Provider, JsonRpcProvider, ContractTransactionResponse, ContractRunner, TypedDataDomain} from "ethers";
-import web3 from "web3";
+import {Signer, Provider, JsonRpcProvider, ContractTransactionResponse, ContractRunner, TypedDataDomain, isHexString, Networkish, BlockTag, isAddress} from "ethers";
 import {RevocationListPath} from "./types/RevocationListPath";
 import {RevocationKeyInstruction} from "./types/RevocationKeyInstruction";
 import {RevocationKeyPath} from "./types/RevocationKeyPath";
@@ -22,8 +20,6 @@ import {
   getRevocationRegistryDeploymentAddress
 } from "@spherity/ethr-revocation-registry";
 import {RevocationKeysAndStatuses} from "./types/RevocationKeysAndStatuses";
-import {Networkish} from "@ethersproject/networks/src.ts/types";
-
 const DEFAULT_REGISTRY_CHAIN_ID = 1
 
 type TimestampedEvent<T extends TypedContractEvent> = T & {
@@ -151,19 +147,19 @@ export class EthereumRevocationRegistryController {
   }
 
   private validateSignature(signature: string) {
-    if(!web3.utils.isHexStrict(signature)) {
+    if(!isHexString(signature)) {
       throw new Error(`Supplied signature '${signature}' is not valid (notice: must start with 0x prefix; must contain only HEX character set)`)
     }
   }
 
   private validateAddress(address: string) {
-    if(!web3.utils.isAddress(address)) {
+    if(!isAddress(address)) {
       throw new Error(`Supplied address '${address}' is not valid (notice: must start with 0x prefix; must contain only HEX character set; must have a length of 42)`)
     }
   }
 
   private validateBytes32(bytes32String: string) {
-    if(!web3.utils.isHexStrict(bytes32String)) {
+    if(!isHexString(bytes32String)) {
       throw new Error(`Supplied bytes32 string '${bytes32String}' is not valid (notice: must start with 0x prefix; must contain only HEX character set)`)
     }
     if(bytes32String.length !== 66) {
