@@ -6,8 +6,7 @@ import {
   RevocationKeyPath,
   RevocationListPath
 } from "../src";
-import {Wallet} from "ethers";
-import web3 from "web3";
+import {Wallet, keccak256, toUtf8Bytes} from "ethers";
 
 jest.setTimeout(30000)
 
@@ -147,11 +146,11 @@ describe('EthrRevocationRegistryController', () => {
 
       const revocationKeyInstructions: RevocationKeyInstruction[] = [
         {
-          revocationKey: web3.utils.keccak256("revocationKey"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey")),
           revoked: true
         } as any,
         {
-          revocationKey: web3.utils.keccak256("revocationKey2"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
           revoked: true
         },
       ];
@@ -178,11 +177,11 @@ describe('EthrRevocationRegistryController', () => {
 
       const revocationKeyInstructions: RevocationKeyInstruction[] = [
         {
-          revocationKey: web3.utils.keccak256("revocationKey"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey")),
           revoked: true
         } as any,
         {
-          revocationKey: web3.utils.keccak256("revocationKey2"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
           revoked: true
         },
       ];
