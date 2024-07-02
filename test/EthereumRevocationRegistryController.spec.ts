@@ -5,12 +5,9 @@ import {
   RevocationKeyPath,
   RevocationListPath
 } from "../src";
-import web3 from "web3";
 import {GetDateForTodayPlusDays} from "./testUtils";
 import {when} from 'jest-when'
-import {Block} from "@ethersproject/abstract-provider";
-import {TypedDataSigner} from "@ethersproject/abstract-signer";
-import {ContractRunner, Network, Provider, Signer} from "ethers";
+import {Block, ContractRunner, Network, Provider, Signer, keccak256, toUtf8Bytes} from "ethers";
 import {EIP712DomainName} from "@spherity/ethr-revocation-registry";
 import {ChangeStatusSignedOperation} from "../src/EthereumRevocationRegistryController";
 
@@ -27,7 +24,7 @@ describe('EthrRevocationRegistryController', () => {
   let signerMock = {
     getAddress: jest.fn(),
     signTypedData: jest.fn()
-  } as unknown as Signer & TypedDataSigner
+  } as unknown as Signer;
   const addressMock = "mockedRegistryAddress"
   let runnerMock = {}
   const contractVersion = "1.0.0"
@@ -103,8 +100,8 @@ describe('EthrRevocationRegistryController', () => {
     it('should work with default "latest" blockTag directly calling the contract', async () => {
       const revocationKeyPath: RevocationKeyPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
-        revocationKey: web3.utils.keccak256("revocationKey")
+        list: keccak256(toUtf8Bytes("listname")),
+        revocationKey: keccak256(toUtf8Bytes("revocationKey"))
       }
       when(registryContractMock.isRevoked).calledWith(
           expect.anything(),
@@ -123,8 +120,8 @@ describe('EthrRevocationRegistryController', () => {
       const blockTag = 123123213213212131312
       const revocationKeyPath: RevocationKeyPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
-        revocationKey: web3.utils.keccak256("revocationKey")
+        list: keccak256(toUtf8Bytes("listname")),
+        revocationKey: keccak256(toUtf8Bytes("revocationKey"))
       }
 
       when(registryContractMock.isRevoked).calledWith(
@@ -144,8 +141,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should return a revoked state if the whole list is revoked even if the key is unrevoked', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
 
         const timestamp = GetDateForTodayPlusDays(-5);
@@ -180,8 +177,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should return a revoked state if the whole list is unrevoked, but the key is revoked', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
 
         const timestamp = GetDateForTodayPlusDays(-5);
@@ -216,8 +213,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should return a unrevoked state if the positive revocation events are in the future relative to the queried timestamp', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
 
         const timestamp = GetDateForTodayPlusDays(-5);
@@ -254,8 +251,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should return an unrevoked state if there are no revocation events', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
 
         const timestamp = GetDateForTodayPlusDays(-5);
@@ -269,8 +266,8 @@ describe('EthrRevocationRegistryController', () => {
       it.skip('should throw an error if the events cannot be fetched', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
 
         const timestamp = GetDateForTodayPlusDays(-5);
@@ -293,17 +290,17 @@ describe('EthrRevocationRegistryController', () => {
         it('should notice emptiness', async () => {
           const revocationKeyPath: RevocationKeyPath = {
             namespace: "",
-            list: web3.utils.keccak256("listname"),
-            revocationKey: web3.utils.keccak256("revocationKey")
+            list: keccak256(toUtf8Bytes("listname")),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey"))
           }
           expect(registry.isRevoked(revocationKeyPath)).rejects.toThrow(Error);
           expect(registryContractMock.isRevoked).toHaveBeenCalledTimes(0);
         })
         it('should notice invalid address', async () => {
           const revocationKeyPath: RevocationKeyPath = {
-            namespace: web3.utils.keccak256("invalidaddress"),
-            list: web3.utils.keccak256("listname"),
-            revocationKey: web3.utils.keccak256("revocationKey")
+            namespace: keccak256(toUtf8Bytes("invalidaddress")),
+            list: keccak256(toUtf8Bytes("listname")),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey"))
           }
           expect(registry.isRevoked(revocationKeyPath)).rejects.toThrow(Error);
           expect(registryContractMock.isRevoked).toHaveBeenCalledTimes(0);
@@ -314,7 +311,7 @@ describe('EthrRevocationRegistryController', () => {
           const revocationKeyPath: RevocationKeyPath = {
             namespace: validAddress,
             list: "",
-            revocationKey: web3.utils.keccak256("revocationKey")
+            revocationKey: keccak256(toUtf8Bytes("revocationKey"))
           }
           expect(registry.isRevoked(revocationKeyPath)).rejects.toThrow(Error);
           expect(registryContractMock.isRevoked).toHaveBeenCalledTimes(0);
@@ -323,7 +320,7 @@ describe('EthrRevocationRegistryController', () => {
           const revocationKeyPath: RevocationKeyPath = {
             namespace: validAddress,
             list: validAddress,
-            revocationKey: web3.utils.keccak256("revocationKey")
+            revocationKey: keccak256(toUtf8Bytes("revocationKey"))
           }
           expect(registry.isRevoked(revocationKeyPath)).rejects.toThrow(Error);
           expect(registryContractMock.isRevoked).toHaveBeenCalledTimes(0);
@@ -333,7 +330,7 @@ describe('EthrRevocationRegistryController', () => {
         it('should notice emptiness', async () => {
           const revocationKeyPath: RevocationKeyPath = {
             namespace: validAddress,
-            list: web3.utils.keccak256("listname"),
+            list: keccak256(toUtf8Bytes("listname")),
             revocationKey: ""
           }
           expect(registry.isRevoked(revocationKeyPath)).rejects.toThrow(Error);
@@ -342,7 +339,7 @@ describe('EthrRevocationRegistryController', () => {
         it('should notice invalid bytes32', async () => {
           const revocationKeyPath: RevocationKeyPath = {
             namespace: validAddress,
-            list: web3.utils.keccak256("listname"),
+            list: keccak256(toUtf8Bytes("listname")),
             revocationKey: validAddress
           }
           expect(registry.isRevoked(revocationKeyPath)).rejects.toThrow(Error);
@@ -357,8 +354,8 @@ describe('EthrRevocationRegistryController', () => {
       const revocationStatus: boolean = true;
       const revocationKeyPath: RevocationKeyPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
-        revocationKey: web3.utils.keccak256("revocationKey")
+        list: keccak256(toUtf8Bytes("listname")),
+        revocationKey: keccak256(toUtf8Bytes("revocationKey"))
       }
       expect(registry.changeStatus(revocationStatus, revocationKeyPath)).resolves;
       expect(registryContractMock.changeStatus).toHaveBeenCalledTimes(1);
@@ -368,17 +365,17 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatus(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatus).toHaveBeenCalledTimes(0);
       })
       it('should notice invalid address', async () => {
         const revocationKeyPath: RevocationKeyPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatus(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatus).toHaveBeenCalledTimes(0);
@@ -389,7 +386,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
           list: "",
-          revocationKey: web3.utils.keccak256("revocationKey")
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatus(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatus).toHaveBeenCalledTimes(0);
@@ -398,7 +395,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
           list: validAddress,
-          revocationKey: web3.utils.keccak256("revocationKey")
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatus(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatus).toHaveBeenCalledTimes(0);
@@ -408,7 +405,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
           revocationKey: ""
         }
         expect(registry.changeStatus(true, revocationKeyPath)).rejects.toThrow(Error);
@@ -417,7 +414,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid bytes32', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
           revocationKey: validAddress
         }
         expect(registry.changeStatus(true, revocationKeyPath)).rejects.toThrow(Error);
@@ -431,8 +428,8 @@ describe('EthrRevocationRegistryController', () => {
       const revocationStatus: boolean = true;
       const revocationKeyPath: RevocationKeyPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
-        revocationKey: web3.utils.keccak256("revocationKey")
+        list: keccak256(toUtf8Bytes("listname")),
+        revocationKey: keccak256(toUtf8Bytes("revocationKey"))
       }
       expect(registry.changeStatusDelegated(revocationStatus, revocationKeyPath)).resolves;
       expect(registryContractMock.changeStatusDelegated).toHaveBeenCalledTimes(1);
@@ -442,17 +439,17 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatusDelegated(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatusDelegated).toHaveBeenCalledTimes(0);
       })
       it('should notice invalid address', async () => {
         const revocationKeyPath: RevocationKeyPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatusDelegated(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatusDelegated).toHaveBeenCalledTimes(0);
@@ -463,7 +460,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
           list: "",
-          revocationKey: web3.utils.keccak256("revocationKey")
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatusDelegated(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatus).toHaveBeenCalledTimes(0);
@@ -472,7 +469,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
           list: validAddress,
-          revocationKey: web3.utils.keccak256("revocationKey")
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         expect(registry.changeStatusDelegated(true, revocationKeyPath)).rejects.toThrow(Error);
         expect(registryContractMock.changeStatusDelegated).toHaveBeenCalledTimes(0);
@@ -482,7 +479,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
           revocationKey: ""
         }
         expect(registry.changeStatus(true, revocationKeyPath)).rejects.toThrow(Error);
@@ -491,7 +488,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid bytes32', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
           revocationKey: validAddress
         }
         expect(registry.changeStatusDelegated(true, revocationKeyPath)).rejects.toThrow(Error);
@@ -504,14 +501,14 @@ describe('EthrRevocationRegistryController', () => {
     it('should let valid parameters pass', async () => {
       const revocationKeyPath: RevocationKeyPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
-        revocationKey: web3.utils.keccak256("revocationKey")
+        list: keccak256(toUtf8Bytes("listname")),
+        revocationKey: keccak256(toUtf8Bytes("revocationKey"))
       }
       const changeStatusSignedOperation = {
         revoked: true,
         revocationKeyPath: revocationKeyPath,
         signer: validAddress,
-        signature: web3.utils.keccak256("mockedSignature"),
+        signature: keccak256(toUtf8Bytes("mockedSignature")),
         nonce: 0
       } as ChangeStatusSignedOperation
 
@@ -533,8 +530,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
@@ -551,8 +548,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid hex', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
@@ -572,8 +569,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
@@ -590,14 +587,14 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid hex', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
           revocationKeyPath: revocationKeyPath,
-          signer: web3.utils.keccak256("invalidAddress"),
-          signature: web3.utils.keccak256("mockedSignature"),
+          signer: keccak256(toUtf8Bytes("invalidAddress")),
+          signature: keccak256(toUtf8Bytes("mockedSignature")),
           nonce: 0
         } as ChangeStatusSignedOperation
 
@@ -611,8 +608,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
@@ -629,8 +626,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice out of date nonce', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
@@ -650,14 +647,14 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
           revocationKeyPath: revocationKeyPath,
           signer: validAddress,
-          signature: web3.utils.keccak256("mockedSignature"),
+          signature: keccak256(toUtf8Bytes("mockedSignature")),
           nonce: 0
         } as ChangeStatusSignedOperation
 
@@ -667,15 +664,15 @@ describe('EthrRevocationRegistryController', () => {
       })
       it('should notice invalid address', async () => {
         const revocationKeyPath: RevocationKeyPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
-          revocationKey: web3.utils.keccak256("revocationKey")
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
           revocationKeyPath: revocationKeyPath,
           signer: validAddress,
-          signature: web3.utils.keccak256("mockedSignature"),
+          signature: keccak256(toUtf8Bytes("mockedSignature")),
           nonce: 0
         } as ChangeStatusSignedOperation
 
@@ -690,13 +687,13 @@ describe('EthrRevocationRegistryController', () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
           list: "",
-          revocationKey: web3.utils.keccak256("revocationKey")
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
           revocationKeyPath: revocationKeyPath,
           signer: validAddress,
-          signature: web3.utils.keccak256("mockedSignature"),
+          signature: keccak256(toUtf8Bytes("mockedSignature")),
           nonce: 0
         } as ChangeStatusSignedOperation
 
@@ -708,13 +705,13 @@ describe('EthrRevocationRegistryController', () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
           list: validAddress,
-          revocationKey: web3.utils.keccak256("revocationKey")
+          revocationKey: keccak256(toUtf8Bytes("revocationKey"))
         }
         const changeStatusSignedOperation = {
           revoked: true,
           revocationKeyPath: revocationKeyPath,
           signer: validAddress,
-          signature: web3.utils.keccak256("mockedSignature"),
+          signature: keccak256(toUtf8Bytes("mockedSignature")),
           nonce: 0
         } as ChangeStatusSignedOperation
 
@@ -728,14 +725,14 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("revocationList"),
+          list: keccak256(toUtf8Bytes("revocationList")),
           revocationKey: ""
         }
         const changeStatusSignedOperation = {
           revoked: true,
           revocationKeyPath: revocationKeyPath,
           signer: validAddress,
-          signature: web3.utils.keccak256("mockedSignature"),
+          signature: keccak256(toUtf8Bytes("mockedSignature")),
           nonce: 0
         } as ChangeStatusSignedOperation
 
@@ -746,14 +743,14 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid bytes32', async () => {
         const revocationKeyPath: RevocationKeyPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("revocationList"),
+          list: keccak256(toUtf8Bytes("revocationList")),
           revocationKey: validAddress
         }
         const changeStatusSignedOperation = {
           revoked: true,
           revocationKeyPath: revocationKeyPath,
           signer: validAddress,
-          signature: web3.utils.keccak256("mockedSignature"),
+          signature: keccak256(toUtf8Bytes("mockedSignature")),
           nonce: 0
         } as ChangeStatusSignedOperation
 
@@ -771,8 +768,8 @@ describe('EthrRevocationRegistryController', () => {
       const signature = "mockedSignatureasd"
       const revocationKeyPath: RevocationKeyPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("list"),
-        revocationKey: web3.utils.keccak256("revocationKey")
+        list: keccak256(toUtf8Bytes("list")),
+        revocationKey: keccak256(toUtf8Bytes("revocationKey"))
       }
       when(registryContractMock.getAddress).mockResolvedValue(addressMock)
       when(signerMock.getAddress).mockResolvedValue(validAddress)
@@ -795,8 +792,8 @@ describe('EthrRevocationRegistryController', () => {
     it('should return an error, because no signer was given', async () => {
       const revocationKeyPath: RevocationKeyPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("list"),
-        revocationKey: web3.utils.keccak256("revocationKey")
+        list: keccak256(toUtf8Bytes("list")),
+        revocationKey: keccak256(toUtf8Bytes("revocationKey"))
       }
       expect(registryWithoutSigner.generateChangeStatusSignedPayload(true, revocationKeyPath)).rejects.toThrow(Error)
     })
@@ -807,15 +804,15 @@ describe('EthrRevocationRegistryController', () => {
       const revocationStatus: boolean = true;
       const revocationListPath: RevocationListPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
+        list: keccak256(toUtf8Bytes("listname")),
       }
       const revocationKeyInstructions: RevocationKeyInstruction[] = [
         {
-          revocationKey: web3.utils.keccak256("revocationKey"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey")),
           revoked: true
         },
         {
-          revocationKey: web3.utils.keccak256("revocationKey2"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
           revoked: true
         },
       ];
@@ -835,7 +832,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         // can be empty because the check happens before
         const revocationKeyInstructions: RevocationKeyInstruction[] = []
@@ -844,8 +841,8 @@ describe('EthrRevocationRegistryController', () => {
       })
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         // can be empty because the check happens before
         const revocationKeyInstructions: RevocationKeyInstruction[] = []
@@ -880,7 +877,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const revocationKeyInstructions: RevocationKeyInstruction[] = [
           {
@@ -888,7 +885,7 @@ describe('EthrRevocationRegistryController', () => {
             revoked: true
           },
           {
-            revocationKey: web3.utils.keccak256("revocationKey2"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
             revoked: true
           },
         ];
@@ -899,7 +896,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const revocationKeyInstructions: RevocationKeyInstruction[] = [
           {
@@ -907,7 +904,7 @@ describe('EthrRevocationRegistryController', () => {
             revoked: true
           } as any,
           {
-            revocationKey: web3.utils.keccak256("revocationKey2"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
             revoked: true
           },
         ];
@@ -920,15 +917,15 @@ describe('EthrRevocationRegistryController', () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const revocationKeyInstructions: RevocationKeyInstruction[] = [
           {
-            revocationKey: web3.utils.keccak256("revocationKey"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey")),
             revoked: undefined
           } as any,
           {
-            revocationKey: web3.utils.keccak256("revocationKey2"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
             revoked: true
           },
         ];
@@ -942,15 +939,15 @@ describe('EthrRevocationRegistryController', () => {
     it('should let valid parameters pass', async () => {
       const revocationListPath: RevocationListPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
+        list: keccak256(toUtf8Bytes("listname")),
       }
       const revocationKeyInstructions: RevocationKeyInstruction[] = [
         {
-          revocationKey: web3.utils.keccak256("revocationKey"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey")),
           revoked: true
         },
         {
-          revocationKey: web3.utils.keccak256("revocationKey2"),
+          revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
           revoked: true
         },
       ];
@@ -970,7 +967,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         // can be empty because the check happens before
         const revocationKeyInstructions: RevocationKeyInstruction[] = []
@@ -979,8 +976,8 @@ describe('EthrRevocationRegistryController', () => {
       })
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         // can be empty because the check happens before
         const revocationKeyInstructions: RevocationKeyInstruction[] = []
@@ -1015,7 +1012,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const revocationKeyInstructions: RevocationKeyInstruction[] = [
           {
@@ -1023,7 +1020,7 @@ describe('EthrRevocationRegistryController', () => {
             revoked: true
           },
           {
-            revocationKey: web3.utils.keccak256("revocationKey2"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
             revoked: true
           },
         ];
@@ -1034,7 +1031,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const revocationKeyInstructions: RevocationKeyInstruction[] = [
           {
@@ -1042,7 +1039,7 @@ describe('EthrRevocationRegistryController', () => {
             revoked: true
           } as any,
           {
-            revocationKey: web3.utils.keccak256("revocationKey2"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
             revoked: true
           },
         ];
@@ -1055,15 +1052,15 @@ describe('EthrRevocationRegistryController', () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const revocationKeyInstructions: RevocationKeyInstruction[] = [
           {
-            revocationKey: web3.utils.keccak256("revocationKey"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey")),
             revoked: undefined
           } as any,
           {
-            revocationKey: web3.utils.keccak256("revocationKey2"),
+            revocationKey: keccak256(toUtf8Bytes("revocationKey2")),
             revoked: true
           },
         ];
@@ -1077,7 +1074,7 @@ describe('EthrRevocationRegistryController', () => {
     it('should let valid parameters pass', async () => {
       const revocationListPath: RevocationListPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
+        list: keccak256(toUtf8Bytes("listname")),
       }
 
       expect(registry.changeListOwner(revocationListPath, validAddress)).resolves;
@@ -1088,7 +1085,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.changeListOwner(revocationListPath, validAddress)).rejects.toThrow(Error);
@@ -1096,8 +1093,8 @@ describe('EthrRevocationRegistryController', () => {
       })
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.changeListOwner(revocationListPath, validAddress)).rejects.toThrow(Error);
@@ -1126,7 +1123,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "validAddress",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         expect(registry.changeListOwner(revocationListPath, "")).rejects.toThrow(Error);
         expect(registryContractMock.changeListOwner).toHaveBeenCalledTimes(0);
@@ -1134,9 +1131,9 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
-        expect(registry.changeListOwner(revocationListPath, web3.utils.keccak256("invalidaddress"))).rejects.toThrow(Error);
+        expect(registry.changeListOwner(revocationListPath, keccak256(toUtf8Bytes("invalidaddress")))).rejects.toThrow(Error);
         expect(registryContractMock.changeListOwner).toHaveBeenCalledTimes(0);
       })
     })
@@ -1146,7 +1143,7 @@ describe('EthrRevocationRegistryController', () => {
     it('should let valid parameters pass', async () => {
       const revocationListPath: RevocationListPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
+        list: keccak256(toUtf8Bytes("listname")),
       }
       const expiryDate = GetDateForTodayPlusDays(5);
       const expiryDateInSeconds = Math.floor(expiryDate.getTime()/1000);
@@ -1165,7 +1162,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         const expiryDate = GetDateForTodayPlusDays(5);
@@ -1175,8 +1172,8 @@ describe('EthrRevocationRegistryController', () => {
       })
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         const expiryDate = GetDateForTodayPlusDays(5);
@@ -1221,7 +1218,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "validAddress",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const expiryDate = GetDateForTodayPlusDays(5);
 
@@ -1231,11 +1228,11 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const expiryDate = GetDateForTodayPlusDays(5);
 
-        expect(registry.addListDelegate(revocationListPath, web3.utils.keccak256("invalidaddress"), expiryDate)).rejects.toThrow(Error);
+        expect(registry.addListDelegate(revocationListPath, keccak256(toUtf8Bytes("invalidaddress")), expiryDate)).rejects.toThrow(Error);
         expect(registryContractMock.addListDelegate).toHaveBeenCalledTimes(0);
       })
     })
@@ -1243,7 +1240,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice date in the past', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
         const expiryDate = GetDateForTodayPlusDays(-5);
 
@@ -1253,7 +1250,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice null date', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.addListDelegate(revocationListPath, validAddress, undefined as any)).rejects.toThrow(Error);
@@ -1266,7 +1263,7 @@ describe('EthrRevocationRegistryController', () => {
     it('should let valid parameters pass', async () => {
       const revocationListPath: RevocationListPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
+        list: keccak256(toUtf8Bytes("listname")),
       }
 
       expect(registry.removeListDelegate(revocationListPath, validAddress)).resolves;
@@ -1277,7 +1274,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.removeListDelegate(revocationListPath, validAddress)).rejects.toThrow(Error);
@@ -1285,8 +1282,8 @@ describe('EthrRevocationRegistryController', () => {
       })
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
-          namespace: web3.utils.keccak256("invalidaddress"),
-          list: web3.utils.keccak256("listname"),
+          namespace: keccak256(toUtf8Bytes("invalidaddress")),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.removeListDelegate(revocationListPath, validAddress)).rejects.toThrow(Error);
@@ -1317,7 +1314,7 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice emptiness', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: "validAddress",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.removeListDelegate(revocationListPath, "")).rejects.toThrow(Error);
@@ -1326,10 +1323,10 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid address', async () => {
         const revocationListPath: RevocationListPath = {
           namespace: validAddress,
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
-        expect(registry.removeListDelegate(revocationListPath, web3.utils.keccak256("invalidaddress"))).rejects.toThrow(Error);
+        expect(registry.removeListDelegate(revocationListPath, keccak256(toUtf8Bytes("invalidaddress")))).rejects.toThrow(Error);
         expect(registryContractMock.removeListDelegate).toHaveBeenCalledTimes(0);
       })
     })
@@ -1340,7 +1337,7 @@ describe('EthrRevocationRegistryController', () => {
       const revocationStatus: boolean = true;
       const revocationListPath: RevocationListPath = {
         namespace: validAddress,
-        list: web3.utils.keccak256("listname"),
+        list: keccak256(toUtf8Bytes("listname")),
       }
 
       expect(registry.changeListStatus(revocationStatus, revocationListPath)).resolves;
@@ -1352,7 +1349,7 @@ describe('EthrRevocationRegistryController', () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
           namespace: "",
-          list: web3.utils.keccak256("listname"),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.changeListStatus(revocationStatus, revocationListPath)).rejects.toThrow(Error);
@@ -1361,8 +1358,8 @@ describe('EthrRevocationRegistryController', () => {
       it('should notice invalid address', async () => {
         const revocationStatus: boolean = true;
         const revocationListPath: RevocationListPath = {
-          namespace: web3.utils.keccak256("invalidAddress"),
-          list: web3.utils.keccak256("listname"),
+          namespace: keccak256(toUtf8Bytes("invalidAddress")),
+          list: keccak256(toUtf8Bytes("listname")),
         }
 
         expect(registry.changeListStatus(revocationStatus, revocationListPath)).rejects.toThrow(Error);
